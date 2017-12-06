@@ -28,10 +28,10 @@ import javax.security.auth.login.AccountNotFoundException;
  */
 public class BankNodeImpl implements IBankNode{
     
-    private long nodeId;
-    private IBank bank;
-    private List<INode> neighbours;
-    private List<Object> messageReceived;
+    private final long nodeId;
+    private final IBank bank;
+    private final List<INode> neighbours;
+    private final List<Object> messageReceived;
 
     public BankNodeImpl(long nodeId, IBank bank, List<INode> neighbours, List<Object> messageReceived) {
         this.nodeId = nodeId;
@@ -92,13 +92,9 @@ public class BankNodeImpl implements IBankNode{
             Iterator it = neighbours.iterator();
             while(it.hasNext()){
                 IBankNode node=(IBankNode) it.next();
-                if (node.getId()==message.getSenderId()){
-                    continue;
-                }
                 IBankMessage message2=message.clone();
                 message2.setSenderId(this.nodeId);
-                node.onMessage(message2);
-                
+                node.onMessage(message2);                
             }
             
             
