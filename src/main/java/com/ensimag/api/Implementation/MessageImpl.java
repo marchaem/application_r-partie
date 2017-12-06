@@ -31,8 +31,6 @@ public class MessageImpl implements IMessage{
     }
     
     
-    
-    
 
     @Override
     public IAction getAction() {

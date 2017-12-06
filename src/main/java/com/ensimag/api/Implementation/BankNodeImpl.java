@@ -18,6 +18,8 @@ import com.ensimag.api.node.INode;
 import java.io.Serializable;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.rmi.server.RemoteRef;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.List;
 import javax.security.auth.login.AccountNotFoundException;
@@ -26,20 +28,37 @@ import javax.security.auth.login.AccountNotFoundException;
  *
  * @author marchaem
  */
-public class BankNodeImpl implements IBankNode{
+
+//IMPORTANT : Seuls les nodes sont à ajouter sur le RMI registry
+public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     
     private final long nodeId;
     private final IBank bank;
     private final List<INode> neighbours;
     private final List<Object> messageReceived;
 
-    public BankNodeImpl(long nodeId, IBank bank, List<INode> neighbours, List<Object> messageReceived) {
+    public BankNodeImpl(long nodeId, IBank bank, List<INode> neighbours, List<Object> messageReceived) throws RemoteException {
         this.nodeId = nodeId;
         this.bank = bank;
         this.neighbours = neighbours;
         this.messageReceived = messageReceived;
     }
-    
+
+    public IBank getBank() {
+        return bank;
+    }
+
+    public List<Object> getMessageReceived() {
+        return messageReceived;
+    }
+
+    public List<INode> getNeighbours() {
+        return neighbours;
+    }
+
+    public long getNodeId() {
+        return nodeId;
+    }
     
     
     @Override
@@ -49,6 +68,7 @@ public class BankNodeImpl implements IBankNode{
 
     @Override
     public List<IAccount> getAccounts() throws RemoteException {
+       
         return bank.getAccounts();
     }
 
@@ -69,6 +89,7 @@ public class BankNodeImpl implements IBankNode{
 
     @Override
     public long getId() throws RemoteException {
+        System.out.println("lool");
         return nodeId;
     }
 
@@ -79,9 +100,11 @@ public class BankNodeImpl implements IBankNode{
         if(messageReceived.contains(message.getMessageId())){
             return;
         }
+        //on est le destinataire du message
         if(message.getDestinationBankId()==bank.getBankId()){
            try{
                Serializable result = message.getAction().execute(this);
+               
            } 
            catch(Exception e){
                //gestion à faire
