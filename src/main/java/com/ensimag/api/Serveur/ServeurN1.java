@@ -19,6 +19,7 @@ public class ServeurN1 {
     public static void main(String[] argv) {
     try {
         //argv[0]: numero du serveur 
+            System.out.println( "les argument son :"+argv[0] );
             System.out.println("on rentre dans le serveur" + "1");
             //on cré un bankNode d'id argv[0] ne contenan pas de banck ni de voisin , et aucun message 
             IBankNode bank=new BankNodeImpl(Long.valueOf("1"),null,null,null);
