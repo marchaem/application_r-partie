@@ -19,7 +19,7 @@ public class Serveur1 {
         try {
             System.out.println("on rentre dans serveur1");
             IBankNode bank1=new BankNodeImpl(10,null,null,null);
-            LocateRegistry.getRegistry(10000).bind("bank1", bank1); // publie notre instance sous le nom "Add"
+            LocateRegistry.getRegistry(10000).bind("bank1", bank1); // publie notre instance sous le nom "bank1"
             
             
             
@@ -30,7 +30,7 @@ public class Serveur1 {
             }
         }
         catch(Exception e){
-            
+            e.printStackTrace();
         }
         System.out.println("serveur 1 lancé");
     }    

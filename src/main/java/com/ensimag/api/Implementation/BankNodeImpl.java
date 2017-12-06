@@ -68,6 +68,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
 
     @Override
     public List<IAccount> getAccounts() throws RemoteException {
+       
         return bank.getAccounts();
     }
 
@@ -88,6 +89,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
 
     @Override
     public long getId() throws RemoteException {
+        System.out.println("lool");
         return nodeId;
     }
 
@@ -98,9 +100,11 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         if(messageReceived.contains(message.getMessageId())){
             return;
         }
+        //on est le destinataire du message
         if(message.getDestinationBankId()==bank.getBankId()){
            try{
                Serializable result = message.getAction().execute(this);
+               
            } 
            catch(Exception e){
                //gestion à faire

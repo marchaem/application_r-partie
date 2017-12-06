@@ -5,10 +5,18 @@
  */
 package com.ensimag.api.Implementation;
 
+import com.ensimag.api.message.IAction;
+import java.io.Serializable;
+
 /**
  *
  * @author marchaem
  */
-public class ActionImpl {
+public class ActionImpl implements IAction {
+
+    @Override
+    public Serializable execute(Object node) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }
