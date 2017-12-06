@@ -14,6 +14,32 @@ public class User implements IUser{
     private String name;
     private String age;
     private String FirstName;
+
+    
+    public User() {
+        
+    }
+    
+    
+    public User(String name, String age, String FirstName) {
+        this.name = name;
+        this.age = age;
+        this.FirstName = FirstName;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
+
+    public void setFirstName(String FirstName) {
+        this.FirstName = FirstName;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    
     
     
     
@@ -26,6 +52,8 @@ public class User implements IUser{
     public String getFirstName() {
         return FirstName;
     }
+    
+    
 
     @Override
     public String getAge() {

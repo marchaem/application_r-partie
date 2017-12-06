@@ -30,7 +30,6 @@ public class BankImpl implements IBank{
     }
 
    
-    
     @Override
     public List<IAccount> getAccounts() throws RemoteException {
         //ajouter exceptions
@@ -72,6 +71,7 @@ public class BankImpl implements IBank{
         
         
     }
+    //faire exception
 
     
     
