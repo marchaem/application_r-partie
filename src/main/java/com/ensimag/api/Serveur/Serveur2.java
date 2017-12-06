@@ -23,10 +23,16 @@ public class Serveur2 {
             Registry registry=LocateRegistry.getRegistry(10000);
             IBankNode bank2=new BankNodeImpl(20,null,null,null);
             registry.bind("bank2", bank2); // publie notre instance sous le nom "Add"
+            
+            
             IBankNode bank1=(IBankNode) registry.lookup("bank1");
             System.out.println("bank 1 a pour id : " + bank1.getId());
             bank2.addNeighboor(bank1);
             bank1.addNeighboor(bank2);
+            
+            
+            
+            
             Scanner sc=new Scanner(System.in);
             String str=sc.nextLine();
             System.out.println("après le scanner");

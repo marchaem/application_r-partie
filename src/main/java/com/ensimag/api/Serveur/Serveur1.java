@@ -20,6 +20,9 @@ public class Serveur1 {
             System.out.println("on rentre dans serveur1");
             IBankNode bank1=new BankNodeImpl(10,null,null,null);
             LocateRegistry.getRegistry(10000).bind("bank1", bank1); // publie notre instance sous le nom "Add"
+            
+            
+            
             Scanner sc=new Scanner(System.in);
             String str=sc.nextLine();
             while(!str.equals("exit")){
