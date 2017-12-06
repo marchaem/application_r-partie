@@ -20,8 +20,11 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteRef;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.security.auth.login.AccountNotFoundException;
 
 /**
@@ -34,15 +37,28 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     
     private final long nodeId;
     private final IBank bank;
-    private final List<INode> neighbours;
+    private final HashMap<Long,INode> neighbours;
     private final List<Object> messageReceived;
+    private final List<Object> messageSent;
 
-    public BankNodeImpl(long nodeId, IBank bank, List<INode> neighbours, List<Object> messageReceived) throws RemoteException {
-        this.nodeId = nodeId;
-        this.bank = bank;
+    /**
+     *
+     * @param nodeId
+     * @param bank
+     * @param neighbours
+     * @param <error>
+     * @param messageReceived
+     * @throws java.rmi.RemoteException
+     */
+    public BankNodeImpl(long nodeId,IBank bank, HashMap<Long,INode> neighbours) throws RemoteException{
+        this.nodeId=nodeId;
+        this.bank=bank;                            
         this.neighbours = neighbours;
-        this.messageReceived = messageReceived;
+        this.messageReceived=new ArrayList<Object>();
+        this.messageSent=new ArrayList<Object>();        
     }
+
+    
 
     public IBank getBank() {
         return bank;
@@ -52,10 +68,6 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         return messageReceived;
     }
 
-    public List<INode> getNeighbours() {
-        return neighbours;
-    }
-
     public long getNodeId() {
         return nodeId;
     }
@@ -63,7 +75,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     
     @Override
     public void addNeighboor(INode<IBankMessage> neighboor) throws RemoteException {
-        neighbours.add(neighboor);
+        neighbours.put(neighboor.getId(),neighboor);
     }
 
     @Override
@@ -98,8 +110,13 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         
         
         if(messageReceived.contains(message.getMessageId())){
+            //a voir si bankiD ou pas dans le new (ou nodeId)
+            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+            //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
+            neighbours.get(message.getSenderId()).onAck(ack);
             return;
-        }
+        }        
+            messageReceived.add(message);        
         //on est le destinataire du message
         if(message.getDestinationBankId()==bank.getBankId()){
            try{
@@ -112,12 +129,14 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
            
         }
         else{
-            Iterator it = neighbours.iterator();
+            Set cles=neighbours.keySet();
+            Iterator it = cles.iterator();
+            IBankMessage message2=message.clone();
+            message2.setSenderId(this.nodeId);
             while(it.hasNext()){
-                IBankNode node=(IBankNode) it.next();
-                IBankMessage message2=message.clone();
-                message2.setSenderId(this.nodeId);
-                node.onMessage(message2);                
+                IBankNode node=(IBankNode) neighbours.get(it.next());              
+                node.onMessage(message2);
+                messageSent.add(message2);
             }
             
             
