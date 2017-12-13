@@ -53,10 +53,12 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     public BankNodeImpl(long nodeId,IBank bank, HashMap<Long,INode> neighbours) throws RemoteException{
         this.nodeId=nodeId;
         this.bank=bank;                            
-        this.neighbours = neighbours;
-        this.messageReceived=new ArrayList<Object>();
-        this.messageSent=new ArrayList<Object>();        
+        this.neighbours = neighbours;   //list of neighbours
+        this.messageReceived=new ArrayList<Object>();  //list of message received
+        this.messageSent=new ArrayList<Object>();         //list of messages sent
     }
+
+    
 
     
 
@@ -79,8 +81,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     }
 
     @Override
-    public List<IAccount> getAccounts() throws RemoteException {
-       
+    public List<IAccount> getAccounts() throws RemoteException {   
         return bank.getAccounts();
     }
 
@@ -101,34 +102,39 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
 
     @Override
     public long getId() throws RemoteException {
-        System.out.println("lool");
         return nodeId;
     }
 
     @Override
     public void onMessage(IBankMessage message) throws RemoteException {
         
-        
-        if(messageReceived.contains(message.getMessageId())){
-            //a voir si bankiD ou pas dans le new (ou nodeId)
-            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
-            //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
-            neighbours.get(message.getSenderId()).onAck(ack);
-            return;
-        }        
-            messageReceived.add(message);        
+        System.out.println("on rentre dans onMessage");
+       
+            if(messageReceived.contains(message.getMessageId())){
+                System.out.println("premier if si on a déjà reçu le message");
+                //a voir si bankiD ou pas dans le new (ou nodeId)
+                IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+                //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
+                neighbours.get(message.getSenderId()).onAck(ack);
+                return;        
+            }
+            messageReceived.add(message);
+            
         //on est le destinataire du message
         if(message.getDestinationBankId()==bank.getBankId()){
+            System.out.println("deuxième if si on est déjà le destinataire");
            try{
                Serializable result = message.getAction().execute(this);
                
+               
            } 
            catch(Exception e){
-               //gestion à faire
+               
            }
            
         }
         else{
+            System.out.println("dans le else quand on veut envoyer le message aux voisins");
             Set cles=neighbours.keySet();
             Iterator it = cles.iterator();
             IBankMessage message2=message.clone();
@@ -141,16 +147,18 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
             
             
         }
-    }
+             
+               
+        }
 
     @Override
     public void onAck(IAck ack) throws RemoteException {
-        
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void removeNeighboor(INode<IBankMessage> neighbour) throws RemoteException {
-        neighbours.remove(neighbour);
+    public void removeNeighboor(INode<IBankMessage> neighboor) throws RemoteException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -162,5 +170,12 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     public Boolean deliverResult(IResult<Serializable> result) throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    
+
+    
+    
+
+    
     
 }

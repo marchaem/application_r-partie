@@ -5,10 +5,13 @@
  */
 package com.ensimag.api.Serveur;
 
+import com.ensimag.api.Implementation.BankImpl;
 import com.ensimag.api.Implementation.BankNodeImpl;
 import com.ensimag.api.bank.IBankNode;
+import com.ensimag.api.node.INode;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -20,8 +23,8 @@ public class Serveur2 {
         try {
             System.out.println("on rentre dans serveur 2");
             
-            Registry registry=LocateRegistry.getRegistry(10000);
-            IBankNode bank2=new BankNodeImpl(20,null,null,null);
+            Registry registry=LocateRegistry.getRegistry(10001);
+            IBankNode bank2=new BankNodeImpl(20,new BankImpl(2),new HashMap<Long, INode>());
             registry.bind("bank2", bank2); // publie notre instance sous le nom "Add"
             
             
