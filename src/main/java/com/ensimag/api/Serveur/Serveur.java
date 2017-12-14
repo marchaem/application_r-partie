@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Serveur {
     public static void main(String[] argv) {
         try {
-            Registry registry = LocateRegistry.createRegistry(10000);
+            Registry registry = LocateRegistry.createRegistry(10001);
             Scanner sc=new Scanner(System.in);
             String str=sc.nextLine();          
             while(!str.equals("exit")){

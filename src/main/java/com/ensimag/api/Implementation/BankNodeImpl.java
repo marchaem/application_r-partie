@@ -10,6 +10,7 @@ import com.ensimag.api.bank.IBank;
 import com.ensimag.api.bank.IBankMessage;
 import com.ensimag.api.bank.IBankNode;
 import com.ensimag.api.bank.IUser;
+import com.ensimag.api.message.EnumMessageType;
 import com.ensimag.api.message.IAck;
 import com.ensimag.api.message.IAction;
 import com.ensimag.api.message.IMessage;
@@ -24,7 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.security.auth.login.AccountNotFoundException;
 
 /**
@@ -38,7 +42,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     private final long nodeId;
     private final IBank bank;
     private final HashMap<Long,INode> neighbours;
-    private final List<Object> messageReceived;
+    private final HashMap<Long,IBankMessage> messageReceived;
     private final List<Object> messageSent;
 
     /**
@@ -46,25 +50,27 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
      * @param nodeId
      * @param bank
      * @param neighbours
-     * @param <error>
-     * @param messageReceived
      * @throws java.rmi.RemoteException
      */
     public BankNodeImpl(long nodeId,IBank bank, HashMap<Long,INode> neighbours) throws RemoteException{
         this.nodeId=nodeId;
         this.bank=bank;                            
         this.neighbours = neighbours;
-        this.messageReceived=new ArrayList<Object>();
-        this.messageSent=new ArrayList<Object>();        
+        this.messageReceived=new HashMap<>();
+        this.messageSent=new ArrayList<>();        
     }
 
+    @Override
+    public  String toString(){
+        return "nodeId : "+ nodeId +"\nbank : "+bank.toString()+"\nneighbours : "+ neighbours.toString()+"\nmessageReceived : "+messageReceived.toString()+"\nmessageSent"+messageSent.toString(); 
+    }
     
 
     public IBank getBank() {
         return bank;
     }
 
-    public List<Object> getMessageReceived() {
+    public HashMap<Long,IBankMessage> getMessageReceived() {
         return messageReceived;
     }
 
@@ -107,21 +113,25 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
 
     @Override
     public void onMessage(IBankMessage message) throws RemoteException {
-        
-        
-        if(messageReceived.contains(message.getMessageId())){
+                
+        if(messageReceived.containsKey(message.getMessageId())){// si le message a deja été recu 
             //a voir si bankiD ou pas dans le new (ou nodeId)
-            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
             //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
             neighbours.get(message.getSenderId()).onAck(ack);
             return;
-        }        
-            messageReceived.add(message);        
+        }     
+        
+        messageReceived.put(message.getMessageId(),message);  
+        
         //on est le destinataire du message
         if(message.getDestinationBankId()==bank.getBankId()){
            try{
                Serializable result = message.getAction().execute(this);
-               
+               List<IResult<? extends Serializable>> results = getResultForMessage(message.getMessageId());
+               for (int i =0 ; i<results.size(); i++ ){
+                   deliverResult((IResult<Serializable>) results.get(i));
+               }
            } 
            catch(Exception e){
                //gestion à faire
@@ -129,38 +139,76 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
            
         }
         else{
-            Set cles=neighbours.keySet();
-            Iterator it = cles.iterator();
             IBankMessage message2=message.clone();
             message2.setSenderId(this.nodeId);
-            while(it.hasNext()){
-                IBankNode node=(IBankNode) neighbours.get(it.next());              
+            for(Entry<Long,INode> entry : neighbours.entrySet()) {
+                Long cle = entry.getKey();
+                INode node = entry.getValue();
                 node.onMessage(message2);
                 messageSent.add(message2);
             }
-            
-            
         }
     }
 
     @Override
     public void onAck(IAck ack) throws RemoteException {
+        /*
+        
+        reste a faire la diferentiation des cas en fonction du type du message 
+        
+        */
+        
+        long SenderId = ack.getAckSenderId();
+        if (messageSent.size()<1){// si on en resoi un en trop 
+            System.out.println("acusé recu en trop ");
+            return ;
+        }
+        if(messageSent.contains(ack.getAckMessageId())){//si on resoit un ack 
+            messageSent.remove(ack.getAckMessageId());
+            if (messageReceived.get(ack.getAckMessageId()).getOriginalBankSenderId()==nodeId){// si on est l'émeteur du message de basse 
+                System.out.println("message bien recu pas touts les noeus");// SUE FAIRE ICI 
+            }
+            if (messageSent.size()<1){//si on a recu l'ack de tout le monde
+                IAck ack2=(AckImpl) new AckImpl(this.bank.getBankId(),ack.getAckMessageId());
+                neighbours.get(messageReceived.get(ack.getAckMessageId()).getSenderId()).onAck(ack);
+            }
+        }else{//si on resoi unn ack d une origine indesirable
+            System.out.println("acusé recu d'un inconu ");
+        }
         
     }
 
     @Override
     public void removeNeighboor(INode<IBankMessage> neighbour) throws RemoteException {
-        neighbours.remove(neighbour);
+        neighbours.remove(neighbour.getId());
     }
 
     @Override
     public List<IResult<? extends Serializable>> getResultForMessage(long messageId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //ici le cas ou il n y a que 1 resulta a envoyé 
+        List<IResult<? extends Serializable>> results= new ArrayList<>();
+        try {
+           IResult result =  new ResultImpl(messageReceived.get(messageId).getAction().execute(this),messageId);
+           results.add(result);
+           return results;
+        } catch (Exception ex) {
+            Logger.getLogger(BankNodeImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return results;
     }
 
     @Override
     public Boolean deliverResult(IResult<Serializable> result) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       try{
+           IAction action = new ActionImpl();
+           IBankMessage message= (IBankMessage) new MessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY);
+           neighbours.get(messageReceived.get(result.getMessageId()).getSenderId()).onMessage(message);
+       }catch(Exception ex){
+           return false;
+       }
+       return true;
     }
+
+  
     
 }

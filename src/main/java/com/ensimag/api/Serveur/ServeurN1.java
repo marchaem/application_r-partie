@@ -22,7 +22,7 @@ public class ServeurN1 {
             System.out.println( "les argument son :"+argv[0] );
             System.out.println("on rentre dans le serveur" + "1");
             //on cré un bankNode d'id argv[0] ne contenan pas de banck ni de voisin , et aucun message 
-            IBankNode bank=new BankNodeImpl(Long.valueOf("1"),null,null,null);
+            IBankNode bank=new BankNodeImpl(Long.valueOf("1"),null,null);
             Registry registry=LocateRegistry.getRegistry(10000);
             registry.bind("bank"+"1", bank); // publie notre instance sous le nom "Add"
             

@@ -15,20 +15,20 @@ import com.ensimag.api.message.IMessage;
 public class AckImpl implements IAck{
     
     private final long AckSenderId;
-    private final IMessage message;
+    private final long messageId;
 
     public AckImpl() {
         this.AckSenderId = 0;
-        this.message = null;
+        this.messageId = 0;
     }
 
-    public AckImpl(long AckSenderId, IMessage message) {
+    public AckImpl(long AckSenderId, long messageId) {
         this.AckSenderId = AckSenderId;
-        this.message = message;
+        this.messageId = messageId;
     }
 
    
-        
+   
     
     @Override
     public long getAckSenderId() {
@@ -37,7 +37,7 @@ public class AckImpl implements IAck{
 
     @Override
     public long getAckMessageId() {
-        return message.getMessageId();
-    }
-    
+        return messageId;
+    } 
+
 }

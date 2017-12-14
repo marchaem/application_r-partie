@@ -21,7 +21,7 @@ public class Serveur2 {
             System.out.println("on rentre dans serveur 2");
             
             Registry registry=LocateRegistry.getRegistry(10000);
-            IBankNode bank2=new BankNodeImpl(20,null,null,null);
+            IBankNode bank2=(IBankNode) new BankNodeImpl(20,null,null);
             registry.bind("bank2", bank2); // publie notre instance sous le nom "Add"
             
             
