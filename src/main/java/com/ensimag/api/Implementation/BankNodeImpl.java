@@ -10,6 +10,7 @@ import com.ensimag.api.bank.IBank;
 import com.ensimag.api.bank.IBankMessage;
 import com.ensimag.api.bank.IBankNode;
 import com.ensimag.api.bank.IUser;
+import com.ensimag.api.message.EnumMessageType;
 import com.ensimag.api.message.IAck;
 import com.ensimag.api.message.IAction;
 import com.ensimag.api.message.IMessage;
@@ -109,47 +110,85 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     public void onMessage(IBankMessage message) throws RemoteException {
         
         System.out.println("on rentre dans onMessage");
-       
-            if(messageReceived.contains(message.getMessageId())){
+        if(message.getMessageType()==EnumMessageType.SINGLE_DEST){  //on a un seul destinataire
+            if(messageReceived.contains(message.getMessageId())){  //si j'ai déjà reçu le message
                 System.out.println("premier if si on a déjà reçu le message");
                 //a voir si bankiD ou pas dans le new (ou nodeId)
-                IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
-                //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
-                neighbours.get(message.getSenderId()).onAck(ack);
+               // IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+                //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
+               // neighbours.get(message.getSenderId()).onAck(ack);
                 return;        
             }
-            messageReceived.add(message);
-            
+            messageReceived.add(message.getMessageId());
+
         //on est le destinataire du message
-        if(message.getDestinationBankId()==bank.getBankId()){
-            System.out.println("deuxième if si on est déjà le destinataire");
-           try{
-               Serializable result = message.getAction().execute(this);
+            if(message.getDestinationBankId()==bank.getBankId()){
+                System.out.println("deuxième if si on est déjà le destinataire");
+               try{
+                   Serializable result = message.getAction().execute(this);
+
+
+               } 
+               catch(Exception e){
+
+               }
                
-               
-           } 
-           catch(Exception e){
-               
-           }
-           
-        }
-        else{
-            System.out.println("dans le else quand on veut envoyer le message aux voisins");
-            Set cles=neighbours.keySet();
-            Iterator it = cles.iterator();
-            IBankMessage message2=message.clone();
-            message2.setSenderId(this.nodeId);
-            while(it.hasNext()){
-                IBankNode node=(IBankNode) neighbours.get(it.next());              
-                node.onMessage(message2);
-                messageSent.add(message2);
             }
+            else{
+                System.out.println("dans le else quand on veut envoyer le message aux voisins");
+                Set cles=neighbours.keySet();
+                Iterator it = cles.iterator();
+                IBankMessage message2=message.clone();
+                message2.setSenderId(this.nodeId);
+                while(it.hasNext()){
+                    IBankNode node=(IBankNode) neighbours.get(it.next());              
+                    node.onMessage(message2);
+                    messageSent.add(message2);
+                }
             
+            
+            }
+        }
+        else if(message.getMessageType()==EnumMessageType.BROADCAST){
+            System.out.println("Broadcast");
+            if(messageReceived.contains(message.getMessageId())){  //si j'ai déjà reçu le message
+                System.out.println("premier if si on a déjà reçu le message");
+                //a voir si bankiD ou pas dans le new (ou nodeId)
+               // IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+                //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
+               // neighbours.get(message.getSenderId()).onAck(ack);
+                return;        
+            }
+            else{
+                System.out.println("on a pas encore exécuté");
+               try{
+                    messageReceived.add(message.getMessageId());
+                    Serializable result = message.getAction().execute(this);
+                    Set cles=neighbours.keySet();
+                    Iterator it = cles.iterator();
+                    IBankMessage message2=message.clone();
+                    message2.setSenderId(this.nodeId);
+                    while(it.hasNext()){
+                        IBankNode node=(IBankNode) neighbours.get(it.next());              
+                        node.onMessage(message2);
+                        messageSent.add(message2);
+                    }            
+                }
+               catch(Exception e){
+
+               
+               } 
+               
+            }
+        }
+        
+        else if(message.getMessageType()==EnumMessageType.DELIVERY){
             
         }
+            
              
                
-        }
+    }
 
     @Override
     public void onAck(IAck ack) throws RemoteException {
