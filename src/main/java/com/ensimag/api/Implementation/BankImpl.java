@@ -22,6 +22,12 @@ public class BankImpl implements IBank{
 
     private int bankId;
     private List<IAccount> listAccount;
+
+    public BankImpl(int bankId) {
+        this.bankId = bankId;     
+    }
+    
+    
     
     
     @Override
@@ -46,6 +52,10 @@ public class BankImpl implements IBank{
             AccountImpl acc=(AccountImpl) iter.next();
             if(acc.getAccountNumber()==number){
                 return acc;
+            }
+            else{
+                System.out.println("pas de compte");
+                throw new AccountNotFoundException();
             }
             
         }

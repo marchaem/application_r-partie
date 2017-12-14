@@ -7,6 +7,7 @@ package com.ensimag.api.Implementation;
 
 import com.ensimag.api.bank.IAccount;
 import com.ensimag.api.bank.IBank;
+import com.ensimag.api.bank.IBankAction;
 import com.ensimag.api.bank.IBankMessage;
 import com.ensimag.api.bank.IBankNode;
 import com.ensimag.api.bank.IUser;
@@ -66,6 +67,8 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     }
     
 
+    
+
     public IBank getBank() {
         return bank;
     }
@@ -85,8 +88,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     }
 
     @Override
-    public List<IAccount> getAccounts() throws RemoteException {
-       
+    public List<IAccount> getAccounts() throws RemoteException {   
         return bank.getAccounts();
     }
 
@@ -107,7 +109,6 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
 
     @Override
     public long getId() throws RemoteException {
-        System.out.println("lool");
         return nodeId;
     }
 
@@ -126,15 +127,17 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         
         //on est le destinataire du message
         if(message.getDestinationBankId()==bank.getBankId()){
+            System.out.println("deuxième if si on est déjà le destinataire");
            try{
                Serializable result = message.getAction().execute(this);
                List<IResult<? extends Serializable>> results = getResultForMessage(message.getMessageId());
                for (int i =0 ; i<results.size(); i++ ){
                    deliverResult((IResult<Serializable>) results.get(i));
                }
+
            } 
            catch(Exception e){
-               //gestion à faire
+               
            }
            
         }
@@ -148,7 +151,9 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
                 messageSent.add(message2);
             }
         }
-    }
+             
+               
+        }
 
     @Override
     public void onAck(IAck ack) throws RemoteException {
@@ -200,8 +205,8 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     @Override
     public Boolean deliverResult(IResult<Serializable> result) throws RemoteException {
        try{
-           IAction action = new ActionImpl();
-           IBankMessage message= (IBankMessage) new MessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY);
+           IBankAction action = new BankActionImpl();
+           IBankMessage message= (IBankMessage) new BankMessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY);
            neighbours.get(messageReceived.get(result.getMessageId()).getSenderId()).onMessage(message);
        }catch(Exception ex){
            return false;
@@ -209,6 +214,5 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
        return true;
     }
 
-  
     
 }

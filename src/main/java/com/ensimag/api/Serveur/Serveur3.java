@@ -7,7 +7,12 @@ package com.ensimag.api.Serveur;
 
 import com.ensimag.api.Implementation.BankImpl;
 import com.ensimag.api.Implementation.BankNodeImpl;
+import com.ensimag.api.Implementation.MessageImpl;
+import com.ensimag.api.bank.IBankMessage;
 import com.ensimag.api.bank.IBankNode;
+import com.ensimag.api.message.EnumMessageType;
+import com.ensimag.api.message.IAction;
+import com.ensimag.api.message.IMessage;
 import com.ensimag.api.node.INode;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -18,22 +23,22 @@ import java.util.Scanner;
  *
  * @author marchaem
  */
-public class Serveur2 {
+public class Serveur3 {
      public static void main(String[] argv) {
         try {
-            System.out.println("on rentre dans serveur 2");
+            System.out.println("on rentre dans serveur 3");
             
             Registry registry=LocateRegistry.getRegistry(10001);
-            IBankNode bank2=new BankNodeImpl(20,new BankImpl(2),new HashMap<Long, INode>());
+            IBankNode bank3=new BankNodeImpl(30,new BankImpl(3),new HashMap<Long, INode>());
+            registry.bind("bank3", bank3); // publie notre instance sous le nom "Add"
+            
+            
+            IBankNode bank2=(IBankNode) registry.lookup("bank2");
+            System.out.println("bank 2 a pour id : " + bank2.getId());
+            bank3.addNeighboor(bank2);
+            bank2.addNeighboor(bank3);
+            
 
-            registry.bind("bank2", bank2); // publie notre instance sous le nom "Add"
-            
-            
-            IBankNode bank1=(IBankNode) registry.lookup("bank1");
-            System.out.println("bank 1 a pour id : " + bank1.getId());
-            bank2.addNeighboor(bank1);
-            bank1.addNeighboor(bank2);
-            
             
             
             
@@ -48,7 +53,7 @@ public class Serveur2 {
         catch(Exception e){
             
         }
-        System.out.println("serveur 2 lancé");
+        System.out.println("serveur 3 lancé");
     }    
 }
     

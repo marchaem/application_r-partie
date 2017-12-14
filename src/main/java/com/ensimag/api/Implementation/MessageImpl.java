@@ -15,63 +15,47 @@ import com.ensimag.api.message.IMessage;
  * @author marchaem
  */
 public class MessageImpl implements IMessage{
-    
-    private final long MessageId;
-    private final IAction Action;
-    private final long senderId;
-    private final long DestinationBankId;
-    private final EnumMessageType MessageType;
-
-    public MessageImpl(long MessageId, IAction Action, long senderId, long DestinationBankId, EnumMessageType MessageType) {
-        this.MessageId = MessageId;
-        this.Action = Action;
-        this.senderId = senderId;
-        this.DestinationBankId = DestinationBankId;
-        this.MessageType = MessageType;
-    }
-    
-    
-
-    @Override
-    public IAction getAction() {
-        return Action;
-    }
-
-    @Override
-    public long getDestinationBankId() {
-        return DestinationBankId;
-    }
 
     @Override
     public long getMessageId() {
-            return MessageId;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public EnumMessageType getMessageType() {
-        return MessageType;
+    public IAction getAction() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public long getOriginalBankSenderId() {
-            return DestinationBankId; 
-               }
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     @Override
     public long getSenderId() {
-        return senderId;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void setSenderId(long senderId) {
-        senderId=this.senderId;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public long getDestinationBankId() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public IMessage clone() {
-        MessageImpl message;
-        message = new MessageImpl(MessageId, Action, senderId, DestinationBankId, MessageType);
-        return message;            
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public EnumMessageType getMessageType() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
     
 }
