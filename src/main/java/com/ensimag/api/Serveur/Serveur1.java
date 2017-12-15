@@ -21,8 +21,10 @@ public class Serveur1 {
     public static void main(String[] argv) {
         try {
             System.out.println("on rentre dans serveur1");
+
             IBankNode bank1=new BankNodeImpl(10,new BankImpl(1),new HashMap<Long, INode>());
             LocateRegistry.getRegistry(10001).bind("bank1", bank1); // publie notre instance sous le nom "bank1"
+
             
             Scanner sc=new Scanner(System.in);
             String str=sc.nextLine();

@@ -7,16 +7,31 @@ package com.ensimag.api.Implementation;
 
 import com.ensimag.api.bank.IBankAction;
 import com.ensimag.api.bank.IBankNode;
+import com.ensimag.api.message.IResult;
 import java.io.Serializable;
 
 /**
  *
  * @author marchaem
  */
-public class IBankActionImpl implements IBankAction{
+public class BankActionImpl implements IBankAction{
 
-    public IBankActionImpl() {
+    
+    private final IResult result;
+
+    public BankActionImpl() {
+        this.result = null;
     }
+
+    public BankActionImpl(IResult result) {
+        this.result = result;
+    }
+
+    public IResult getResult() {
+        return result;
+    }
+    
+    
 
     
     
@@ -24,7 +39,7 @@ public class IBankActionImpl implements IBankAction{
     //a changer
     public Serializable execute(IBankNode node) throws Exception {
         System.out.println("on a exécuté");
-        return new IBankActionImpl();
+        return new BankActionImpl();
     }
     
 }

@@ -15,7 +15,7 @@ import com.ensimag.api.message.IMessage;
  *
  * @author marchaem
  */
-public class IBankMessageImpl implements IBankMessage{
+public class BankMessageImpl implements IBankMessage{
 
     private final long MessageId;
     private final IBankAction Action;
@@ -23,7 +23,7 @@ public class IBankMessageImpl implements IBankMessage{
     private final long DestinationBankId;
     private final EnumMessageType MessageType;
 
-    public IBankMessageImpl(long MessageId, IBankAction Action, long senderId, long DestinationBankId, EnumMessageType MessageType) {
+    public BankMessageImpl(long MessageId, IBankAction Action, long senderId, long DestinationBankId, EnumMessageType MessageType) {
         this.MessageId = MessageId;
         this.Action = Action;
         this.senderId = senderId;
@@ -69,8 +69,8 @@ public class IBankMessageImpl implements IBankMessage{
 
     @Override
     public IBankMessage clone() {
-        IBankMessageImpl message;
-        message = new IBankMessageImpl(MessageId, Action, senderId, DestinationBankId, MessageType);
+        BankMessageImpl message;
+        message = new BankMessageImpl(MessageId, Action, senderId, DestinationBankId, MessageType);
         return message;            
     }
 
