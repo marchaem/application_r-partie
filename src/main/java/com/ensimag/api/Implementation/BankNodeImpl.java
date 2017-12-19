@@ -85,6 +85,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     @Override
     public void addNeighboor(INode<IBankMessage> neighboor) throws RemoteException {
         neighbours.put(neighboor.getId(),neighboor);
+        System.out.println("on a ajouté comme voisin" + neighboor.toString());
     }
 
     @Override
@@ -112,44 +113,50 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         return nodeId;
     }
 
+    public HashMap<Long, INode> getNeighbours() {
+        return neighbours;
+    }
+    
+    
+
     @Override
     public void onMessage(IBankMessage message) throws RemoteException {
                 
           
         
-        messageReceived.put(message.getMessageId(),message);  
         
         System.out.println("on rentre dans onMessage");
-        if(message.getMessageType()==EnumMessageType.SINGLE_DEST){  //on a un seul destinataire
-            if(messageReceived.containsKey(message.getMessageId())){// si le message a deja été recu 
-            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
-            //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
-           // neighbours.get(message.getSenderId()).onAck(ack);
-            return;
-        }   
-            if(messageReceived.containsValue(message.getMessageId())){  //si j'ai déjà reçu le message
+        if(message.getMessageType()==EnumMessageType.SINGLE_DEST){  //on a un seul destinataire          
+            if(messageReceived.containsKey(message.getMessageId())){  //si j'ai déjà reçu le message
                 System.out.println("premier if si on a déjà reçu le message");
-                  IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
+                  IAck ack=(AckImpl) new AckImpl(nodeId,message.getMessageId());
                 //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
-                  //neighbours.get(message.getSenderId()).onAck(ack);
+                  neighbours.toString();
+                  System.out.println("on est ici");
+                  message.toString();
+                  ack.toString();
+                  System.out.println("on est là");
+                  neighbours.get(message.getSenderId()).onAck(ack);
                 return;        
             }
+            System.out.println("avant messageReceived.Put");
             messageReceived.put(message.getMessageId(),message);
-
-        //on est le destinataire du message
             if(message.getDestinationBankId()==bank.getBankId()){
                 System.out.println("deuxième if si on est déjà le destinataire");
                try{
                    List<IResult<? extends Serializable>> listeResult=getResultForMessage(message.getMessageId());
-                   //IResult<Serializable> result = listeResult.get(0);
-                   //Boolean delivered = deliverResult(result);
+                   System.out.println("apres get result");
+                   IResult<Serializable> result = (IResult<Serializable>) listeResult.get(0);
+                   System.out.println("apres listResult.get(0)");
+                   Boolean delivered = deliverResult(result);
+                   System.out.println("après delivered");
                    if(delivered==true){
                        System.out.println("on a transféré le message contenant le résultat");
                    }
 
                } 
                catch(Exception e){
-
+                   e.printStackTrace();
                }
                
             }
@@ -160,23 +167,29 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
                 IBankMessage message2=message.clone();
                 message2.setSenderId(this.nodeId);
                 while(it.hasNext()){
+                    System.out.println("dans le while");
                     IBankNode node=(IBankNode) neighbours.get(it.next());              
                     node.onMessage(message2);
-                    messageSent.add(message2);
+                    messageSent.add(message2.getMessageId());
                 }
             
             
             }
         }
         else if(message.getMessageType()==EnumMessageType.BROADCAST){  //tout le monde doit executé
-            
+            if(messageReceived.containsKey(message.getMessageId())){// si le message a deja été recu 
+            IAck ack=(AckImpl) new AckImpl(nodeId,message.getMessageId());
+            //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
+           // neighbours.get(message.getSenderId()).onAck(ack);
+            return;
+        } 
             System.out.println("Broadcast");
-            if(messageReceived.containsValue(message.getMessageId())){  //si j'ai déjà reçu le message
+            if(messageReceived.containsKey(message.getMessageId())){  //si j'ai déjà reçu le message
                 System.out.println("premier if si on a déjà reçu le message");
                 //a voir si bankiD ou pas dans le new (ou nodeId)
-                //IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+                IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
                 //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
-               // neighbours.get(message.getSenderId()).onAck(ack);
+                  neighbours.get(message.getSenderId()).onAck(ack);
                 return;        
             }
             else{
@@ -188,10 +201,11 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
                     Iterator it = cles.iterator();
                     IBankMessage message2=message.clone();
                     message2.setSenderId(this.nodeId);
+                    System.out.println("senderId vaut : "+ message2.getSenderId());
                     while(it.hasNext()){
                         IBankNode node=(IBankNode) neighbours.get(it.next());              
                         node.onMessage(message2);
-                        messageSent.add(message2);
+                        messageSent.add(message2.getMessageId());
                     }            
                 }
                catch(Exception e){             
@@ -200,9 +214,26 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         }
         
         else if(message.getMessageType()==EnumMessageType.DELIVERY){
-            if(message.getDestinationBankId()==bank.getBankId()){  //on veut délivrer la réponse à la banque 
-                
+            System.out.println("dans le delivery");
+            System.out.println(" "+message.getDestinationBankId());
+            if(message.getDestinationBankId()==nodeId){  try {
+                System.out.println("dans le delivery quand on est l'envoyeur inital");
+                //on veut délivrer la réponse à la banque
+                Serializable result =message.getAction().execute(this);
+                } catch (Exception ex) {
+                    Logger.getLogger(BankNodeImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            return;
             }
+            System.out.println("envoie au voisin dans le delivery");
+            IMessage message2 = message.clone();
+            message2.setSenderId(this.getId());
+            long messageId=messageReceived.get(message.getMessageId()).getSenderId();
+            System.out.println("messageId vaut :" + messageId);
+            System.out.println("neighbours vaut " + neighbours.toString());
+            neighbours.get(messageId).onMessage((IBankMessage) message2);
+            
+            
         }
             
              
@@ -259,10 +290,18 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     @Override
     public Boolean deliverResult(IResult<Serializable> result) throws RemoteException {
        try{
-           IBankAction action = new BankActionImpl();
-           IBankMessage message= (IBankMessage) new BankMessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY);
-           neighbours.get(messageReceived.get(result.getMessageId()).getSenderId()).onMessage(message);
+           IBankAction action = new BankActionImpl(result);
+           
+           IBankMessage message= (IBankMessage) new BankMessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY,this.nodeId);
+           long id=messageReceived.get(result.getMessageId()).getSenderId();
+           System.out.println("message Id vaut : " + id + " "); //+ neighbours.get(messageReceived.get(result.getMessageId()).getSenderId()).getId());
+           System.out.println(neighbours.toString());
+           neighbours.get(id).toString();
+            System.out.println("avant onMessage");
+           neighbours.get(id).onMessage(message);
+           System.out.println("apres neighbours.get");
        }catch(Exception ex){
+           ex.printStackTrace();
            return false;
        }
        return true;
