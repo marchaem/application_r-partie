@@ -72,7 +72,9 @@ public class BankMessageImpl implements IBankMessage{
 
     @Override
     public void setSenderId(long senderId) {
+
         this.senderId=senderId;
+
     }
 
     @Override

@@ -5,6 +5,7 @@
  */
 package com.ensimag.api.Implementation;
 import com.ensimag.api.bank.IUser;
+import java.io.Serializable;
 
 /**
  *
@@ -16,8 +17,12 @@ public class User implements IUser{
     private String FirstName;
 
     
-    public User() {
-        
+    public User(Serializable data) {
+        String temp= (String) data;
+        String[]  temp2 = temp.split(",");
+        this.name = temp2[0];
+        this.age = temp2[1];
+        this.FirstName = temp2[2];
     }
     
     

@@ -129,7 +129,8 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
         if(message.getMessageType()==EnumMessageType.SINGLE_DEST){  //on a un seul destinataire          
             if(messageReceived.containsKey(message.getMessageId())){  //si j'ai déjà reçu le message
                 System.out.println("premier if si on a déjà reçu le message");
-                  IAck ack=(AckImpl) new AckImpl(nodeId,message.getMessageId());
+
+                  IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
                 //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
                   neighbours.toString();
                   System.out.println("on est ici");
@@ -148,6 +149,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
                    System.out.println("apres get result");
                    IResult<Serializable> result = (IResult<Serializable>) listeResult.get(0);
                    System.out.println("apres listResult.get(0)");
+
                    Boolean delivered = deliverResult(result);
                    System.out.println("après delivered");
                    if(delivered==true){
@@ -290,7 +292,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     @Override
     public Boolean deliverResult(IResult<Serializable> result) throws RemoteException {
        try{
-           IBankAction action = new BankActionImpl(result);
+           IBankAction action = new BankActionImpl(result,BankActionImpl.actionType.DELIVER);
            
            IBankMessage message= (IBankMessage) new BankMessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY,this.nodeId);
            long id=messageReceived.get(result.getMessageId()).getSenderId();
