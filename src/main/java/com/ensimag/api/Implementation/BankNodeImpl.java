@@ -206,7 +206,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     public Boolean deliverResult(IResult<Serializable> result) throws RemoteException {
        try{
            IBankAction action = new BankActionImpl();
-           IBankMessage message= (IBankMessage) new BankMessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY);
+           IBankMessage message= (IBankMessage) new BankMessageImpl(result.getMessageId(),action,this.nodeId,messageReceived.get(result.getMessageId()).getOriginalBankSenderId(),EnumMessageType.DELIVERY,this.nodeId);
            neighbours.get(messageReceived.get(result.getMessageId()).getSenderId()).onMessage(message);
        }catch(Exception ex){
            return false;

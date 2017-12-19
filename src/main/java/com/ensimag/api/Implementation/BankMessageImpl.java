@@ -22,14 +22,26 @@ public class BankMessageImpl implements IBankMessage{
     private final long senderId;
     private final long DestinationBankId;
     private final EnumMessageType MessageType;
+    private final long OriginalBankSenderId ;
 
-    public BankMessageImpl(long MessageId, IBankAction Action, long senderId, long DestinationBankId, EnumMessageType MessageType) {
+    public BankMessageImpl(long MessageId, IBankAction Action, long senderId, long DestinationBankId, EnumMessageType MessageType, long OriginalBankSenderId) {
         this.MessageId = MessageId;
         this.Action = Action;
         this.senderId = senderId;
         this.DestinationBankId = DestinationBankId;
         this.MessageType = MessageType;
+        this.OriginalBankSenderId = OriginalBankSenderId;
     }
+
+    public BankMessageImpl() {
+        this.MessageId = 0;
+        this.Action = null;
+        this.senderId = 0;
+        this.DestinationBankId = 0;
+        this.MessageType = null;
+        this.OriginalBankSenderId = 0;
+    }
+
     
     
     @Override
@@ -52,10 +64,6 @@ public class BankMessageImpl implements IBankMessage{
         return MessageType;
     }
 
-    @Override
-    public long getOriginalBankSenderId() {
-            return DestinationBankId; 
-               }
 
     @Override
     public long getSenderId() {
@@ -70,12 +78,13 @@ public class BankMessageImpl implements IBankMessage{
     @Override
     public IBankMessage clone() {
         BankMessageImpl message;
-        message = new BankMessageImpl(MessageId, Action, senderId, DestinationBankId, MessageType);
+        message = new BankMessageImpl(MessageId, Action, senderId, DestinationBankId, MessageType,OriginalBankSenderId);
         return message;            
     }
 
-    
-
-    
-    
+    @Override
+    public long getOriginalBankSenderId() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+ 
 }

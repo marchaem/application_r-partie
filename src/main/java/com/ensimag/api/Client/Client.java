@@ -23,7 +23,8 @@ public class Client {
             Registry registry = LocateRegistry.getRegistry(10001);
             IBankNode stub = (IBankNode) registry.lookup("bank3");
             IBankAction action=new BankActionImpl();
-            IBankMessage message=new BankMessageImpl(100, action, stub.getId(), 1, EnumMessageType.DELIVERY);
+            IBankMessage message;
+            message = new BankMessageImpl(100, action, stub.getId(), 1, EnumMessageType.DELIVERY,stub.getId());
             System.out.println("avant on Message");
             stub.onMessage(message);
             System.out.println("après on Message");
