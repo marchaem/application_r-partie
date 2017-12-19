@@ -115,20 +115,21 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     @Override
     public void onMessage(IBankMessage message) throws RemoteException {
                 
-        if(messageReceived.containsKey(message.getMessageId())){// si le message a deja été recu 
-            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
-            //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
-           // neighbours.get(message.getSenderId()).onAck(ack);
-            return;
-        }     
+          
         
         messageReceived.put(message.getMessageId(),message);  
         
         System.out.println("on rentre dans onMessage");
         if(message.getMessageType()==EnumMessageType.SINGLE_DEST){  //on a un seul destinataire
+            if(messageReceived.containsKey(message.getMessageId())){// si le message a deja été recu 
+            IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
+            //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
+           // neighbours.get(message.getSenderId()).onAck(ack);
+            return;
+        }   
             if(messageReceived.containsValue(message.getMessageId())){  //si j'ai déjà reçu le message
                 System.out.println("premier if si on a déjà reçu le message");
-                  IAck ack=(AckImpl) new AckImpl(message,this.bank.getBankId());
+                  IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
                 //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
                   //neighbours.get(message.getSenderId()).onAck(ack);
                 return;        
@@ -140,8 +141,8 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
                 System.out.println("deuxième if si on est déjà le destinataire");
                try{
                    List<IResult<? extends Serializable>> listeResult=getResultForMessage(message.getMessageId());
-                   IResult<Serializable> result = listeResult.get(0);
-                   Boolean delivered = deliverResult(result);
+                   //IResult<Serializable> result = listeResult.get(0);
+                   //Boolean delivered = deliverResult(result);
                    if(delivered==true){
                        System.out.println("on a transféré le message contenant le résultat");
                    }
