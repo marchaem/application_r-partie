@@ -19,7 +19,7 @@ public class BankMessageImpl implements IBankMessage{
 
     private final long MessageId;
     private final IBankAction Action;
-    private final long senderId;
+    private  long senderId;
     private final long DestinationBankId;
     private final EnumMessageType MessageType;
     private final long OriginalBankSenderId ;
@@ -72,7 +72,7 @@ public class BankMessageImpl implements IBankMessage{
 
     @Override
     public void setSenderId(long senderId) {
-        senderId=this.senderId;
+        this.senderId = senderId;
     }
 
     @Override
