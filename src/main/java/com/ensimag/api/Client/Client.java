@@ -21,10 +21,10 @@ public class Client {
     public static void main(String[] argv) {
         try {
             Registry registry = LocateRegistry.getRegistry(10001);
-            IBankNode stub = (IBankNode) registry.lookup("bank3");
+            IBankNode stub = (IBankNode) registry.lookup("bank4");
             IBankAction action=new BankActionImpl();
-            IBankMessage message;
-            message = new BankMessageImpl(100, action, stub.getId(), 1, EnumMessageType.DELIVERY,stub.getId());
+            IBankMessage message= new BankMessageImpl(100, action, stub.getId(), 1, EnumMessageType.DELIVERY,stub.getId());
+
             System.out.println("avant on Message");
             stub.onMessage(message);
             System.out.println("après on Message");

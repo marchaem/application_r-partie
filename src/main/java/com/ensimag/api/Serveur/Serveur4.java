@@ -23,18 +23,18 @@ import java.util.Scanner;
  *
  * @author marchaem
  */
-public class Serveur3 {
+public class Serveur4 {
      public static void main(String[] argv) {
         try {
-            System.out.println("on rentre dans serveur 3");
+            System.out.println("on rentre dans serveur 4");
             
             Registry registry=LocateRegistry.getRegistry(10001);
-            IBankNode bank3=new BankNodeImpl(30,new BankImpl(3),new HashMap<Long, INode>());
-            registry.bind("bank3", bank3); // publie notre instance sous le nom "Add"          
-            IBankNode bank2=(IBankNode) registry.lookup("bank2");
-            System.out.println("bank 2 a pour id : " + bank2.getId());
-            bank3.addNeighboor(bank2);
-            bank2.addNeighboor(bank3);  
+            IBankNode bank4=new BankNodeImpl(40,new BankImpl(3),new HashMap<Long, INode>());
+            registry.bind("bank4", bank4); // publie notre instance sous le nom "Add"          
+            IBankNode bank3=(IBankNode) registry.lookup("bank3");
+            System.out.println("bank 4 a pour id : " + bank3.getId());
+            bank4.addNeighboor(bank3);
+            bank3.addNeighboor(bank4);  
             
             Scanner sc=new Scanner(System.in);
             String str=sc.nextLine();
@@ -47,7 +47,7 @@ public class Serveur3 {
         catch(Exception e){
             
         }
-        System.out.println("serveur 3 lancé");
+        System.out.println("serveur 4 lancé");
     }    
 }
     

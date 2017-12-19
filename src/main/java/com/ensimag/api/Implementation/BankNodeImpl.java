@@ -116,44 +116,97 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
     public void onMessage(IBankMessage message) throws RemoteException {
                 
         if(messageReceived.containsKey(message.getMessageId())){// si le message a deja été recu 
-            //a voir si bankiD ou pas dans le new (ou nodeId)
             IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message.getMessageId());
             //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir 
-            neighbours.get(message.getSenderId()).onAck(ack);
+           // neighbours.get(message.getSenderId()).onAck(ack);
             return;
         }     
         
         messageReceived.put(message.getMessageId(),message);  
         
-        //on est le destinataire du message
-        if(message.getDestinationBankId()==bank.getBankId()){
-            System.out.println("deuxième if si on est déjà le destinataire");
-           try{
-               Serializable result = message.getAction().execute(this);
-               List<IResult<? extends Serializable>> results = getResultForMessage(message.getMessageId());
-               for (int i =0 ; i<results.size(); i++ ){
-                   deliverResult((IResult<Serializable>) results.get(i));
-               }
+        System.out.println("on rentre dans onMessage");
+        if(message.getMessageType()==EnumMessageType.SINGLE_DEST){  //on a un seul destinataire
+            if(messageReceived.containsValue(message.getMessageId())){  //si j'ai déjà reçu le message
+                System.out.println("premier if si on a déjà reçu le message");
+                  IAck ack=(AckImpl) new AckImpl(message,this.bank.getBankId());
+                //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
+                  //neighbours.get(message.getSenderId()).onAck(ack);
+                return;        
+            }
+            messageReceived.put(message.getMessageId(),message);
 
-           } 
-           catch(Exception e){
+        //on est le destinataire du message
+            if(message.getDestinationBankId()==bank.getBankId()){
+                System.out.println("deuxième if si on est déjà le destinataire");
+               try{
+                   List<IResult<? extends Serializable>> listeResult=getResultForMessage(message.getMessageId());
+                   IResult<Serializable> result = listeResult.get(0);
+                   Boolean delivered = deliverResult(result);
+                   if(delivered==true){
+                       System.out.println("on a transféré le message contenant le résultat");
+                   }
+
+               } 
+               catch(Exception e){
+
+               }
                
-           }
-           
-        }
-        else{
-            IBankMessage message2=message.clone();
-            message2.setSenderId(this.nodeId);
-            for(Entry<Long,INode> entry : neighbours.entrySet()) {
-                Long cle = entry.getKey();
-                INode node = entry.getValue();
-                node.onMessage(message2);
-                messageSent.add(message2);
+            }
+            else{
+                System.out.println("dans le else quand on veut envoyer le message aux voisins");
+                Set cles=neighbours.keySet();
+                Iterator it = cles.iterator();
+                IBankMessage message2=message.clone();
+                message2.setSenderId(this.nodeId);
+                while(it.hasNext()){
+                    IBankNode node=(IBankNode) neighbours.get(it.next());              
+                    node.onMessage(message2);
+                    messageSent.add(message2);
+                }
+            
+            
             }
         }
+        else if(message.getMessageType()==EnumMessageType.BROADCAST){  //tout le monde doit executé
+            
+            System.out.println("Broadcast");
+            if(messageReceived.containsValue(message.getMessageId())){  //si j'ai déjà reçu le message
+                System.out.println("premier if si on a déjà reçu le message");
+                //a voir si bankiD ou pas dans le new (ou nodeId)
+                //IAck ack=(AckImpl) new AckImpl(this.bank.getBankId(),message);
+                //on appelle on ack au voisin qui a envoyé le message qu'on vient de recevoir
+               // neighbours.get(message.getSenderId()).onAck(ack);
+                return;        
+            }
+            else{
+                System.out.println("on a pas encore exécuté");
+               try{
+                    messageReceived.put(message.getMessageId(),message);
+                    Serializable result = message.getAction().execute(this);
+                    Set cles=neighbours.keySet();
+                    Iterator it = cles.iterator();
+                    IBankMessage message2=message.clone();
+                    message2.setSenderId(this.nodeId);
+                    while(it.hasNext()){
+                        IBankNode node=(IBankNode) neighbours.get(it.next());              
+                        node.onMessage(message2);
+                        messageSent.add(message2);
+                    }            
+                }
+               catch(Exception e){             
+               }            
+            }
+        }
+        
+        else if(message.getMessageType()==EnumMessageType.DELIVERY){
+            if(message.getDestinationBankId()==bank.getBankId()){  //on veut délivrer la réponse à la banque 
+                
+            }
+        }
+            
              
                
-        }
+    }
 
     @Override
     public void onAck(IAck ack) throws RemoteException {
@@ -178,7 +231,7 @@ public class BankNodeImpl extends UnicastRemoteObject  implements IBankNode{
                 neighbours.get(messageReceived.get(ack.getAckMessageId()).getSenderId()).onAck(ack);
             }
         }else{//si on resoi unn ack d une origine indesirable
-            System.out.println("acusé recu d'un inconu ");
+            System.out.println("accusé recu d'un inconnu ");
         }
         
     }
