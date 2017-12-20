@@ -23,7 +23,7 @@ public class Serveur2 {
         try {
             System.out.println("on rentre dans serveur 2");
             
-            Registry registry=LocateRegistry.getRegistry(10001);
+            Registry registry=LocateRegistry.getRegistry(10000);
             IBankNode bank2=new BankNodeImpl(20,new BankImpl(2),new HashMap<Long, INode>());
 
 

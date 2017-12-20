@@ -28,11 +28,11 @@ public class Serveur3 {
         try {
             System.out.println("on rentre dans serveur 3");
             
-            Registry registry=LocateRegistry.getRegistry(10001);
+            Registry registry=LocateRegistry.getRegistry(10000);
             IBankNode bank3=new BankNodeImpl(30,new BankImpl(3),new HashMap<Long, INode>());
             registry.bind("bank3", bank3); // publie notre instance sous le nom "Add"          
             IBankNode bank2=(IBankNode) registry.lookup("bank2");
-            System.out.println("bank 2 a pour id : " + bank2.getId());
+            System.out.println("bank 3 a pour id : " + bank3.getId());
             bank3.addNeighboor(bank2);
             bank2.addNeighboor(bank3);  
             

@@ -19,7 +19,7 @@ public class BankMessageImpl implements IBankMessage{
 
     private final long MessageId;
     private final IBankAction Action;
-    private  long senderId;
+    private long senderId;
     private final long DestinationBankId;
     private final EnumMessageType MessageType;
     private final long OriginalBankSenderId ;
@@ -72,7 +72,9 @@ public class BankMessageImpl implements IBankMessage{
 
     @Override
     public void setSenderId(long senderId) {
-        this.senderId = senderId;
+
+        this.senderId=senderId;
+
     }
 
     @Override
@@ -84,7 +86,7 @@ public class BankMessageImpl implements IBankMessage{
 
     @Override
     public long getOriginalBankSenderId() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return OriginalBankSenderId;
     }
  
 }
