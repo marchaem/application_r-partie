@@ -55,23 +55,27 @@ public class BankActionImpl implements IBankAction{
     {
       case AJOUT:
           node.openAccount((IUser) new User(result.getData()));
+          return new ResultImpl ("le compte"+result.getData()+" a bien ete créé ",result.getMessageId());
       case CREDIT: //ici les dats du result doive etre "aconteid montant"
           temp= (String)result.getData();
           temp2 = temp.split(" ");
           node.getAccount(Long.parseLong(temp2[0])).add(Integer.parseInt(temp2[1]));
-          break;
+          return new ResultImpl ("le compte"+temp2[0]+" a bien été crédité de :"+temp2[1]+"\n le nouveau solde du compte est :"+node.getAccount(Long.parseLong(temp2[0])).getTotal(),result.getMessageId());
       case DEBIT:
           temp= (String)result.getData();
           temp2 = temp.split(" ");
           node.getAccount(Long.parseLong(temp2[0])).add(- Integer.parseInt(temp2[1]));
+          return new ResultImpl ("le compte"+temp2[0]+" a bien été debité de :"+temp2[1]+"\n le nouveau solde du compte est :"+node.getAccount(Long.parseLong(temp2[0])).getTotal(),result.getMessageId());
       case AUTO_DECOU:  
           temp= (String)result.getData();
           temp2 = temp.split(" ");
-          node.getAccount(Long.parseLong(temp2[0])).setAllowedOverdraw(- Integer.parseInt(temp2[1]));
+          node.getAccount(Long.parseLong(temp2[0])).setAllowedOverdraw( Integer.parseInt(temp2[1]));
+          return new ResultImpl ("le compte"+temp2[0]+" a bien une aurorisation de decouvert de :"+temp2[1],result.getMessageId());
       case SUPR: 
           node.closeAccount((long) result.getData());
+          return new ResultImpl ("le compte"+result.getData()+" a bien ete supimé ",result.getMessageId());
       case DELIVER:
-          System.out.println(result.toString());
+          System.out.println(result.getData().toString());
       default:  
           System.out.println("type d'action inconue");
     }
